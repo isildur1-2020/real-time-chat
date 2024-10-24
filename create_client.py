@@ -5,63 +5,31 @@ Created on Thu Oct 17 06:46:15 2024
 
 @author: isildur1
 """
-from client.Client import Client
+from utils.Args import Args
+from auth.Login import Login
 from threading import Thread
+from utils.Logger import Logger
+from client.Client import Client
 from database.ChatDB import ChatDB
-import logging
-
-def login():
-    try:
-        db = ChatDB()
-        userExists = None
-        while userExists != "Y" and userExists != "n":
-            userExists = input("Tiene un usuario creado? (Y/n): ")
-        username = input("Ingrese su usuario: ")
-        password = input("Ingrese su contraseña: ")
-        if userExists == "n":
-            db.insertUser(username, password)
-        else:
-            userFound = db.getUserByCredentials(username, password)
-            if len(userFound) == 0:
-                raise Exception("Usuario inexistente")
-        return username
-    except Exception as e:
-        raise Exception(f"{e}")
 
 def main():
-    firstTime = True
-    #arduino_conn = Arduino()
-    logging.basicConfig(level=logging.DEBUG,
-                format='%(asctime)s - %(levelname)s - %(message)s')
-
+    PORT = Args.getFirst()
     try:
-        username = login()
-       # arduino_conn.send("Bienvenido")
+        username = Login().handle()
     except Exception as e:
-        logging.info(e)
-       # arduino_conn.send("Error")
+        Logger.log(e)
         return
-    
-    client = Client("127.0.0.1", 8000, username)
+    client = Client(PORT, username)
     
     recv_proc = Thread(target=client.receive)
     recv_proc.start()
     
+    firstTime = True
     while True:
-        if firstTime:
-            db = ChatDB()
-            messages = db.getMessages()
-            for message in messages:
-                customMessage = f"{message[1]} dijo: {message[2]}"
-                logging.info(customMessage)
-                
-        message = input("Escribe un mensaje: ")
-        if message != "":
-            client.send(message)
-        
+        if firstTime: ChatDB().printMessageHistory()
+        message = input("Escribe algo: ")
+        if message != "": client.send(message)
         firstTime = False
-        
-    recv_proc.join()
     
 if __name__ == "__main__":
     main()

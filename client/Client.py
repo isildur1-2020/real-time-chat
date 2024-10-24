@@ -5,29 +5,28 @@ Created on Fri Oct 18 16:10:09 2024
 
 @author: isildur1
 """
-
+import sys
 import socket
-import logging
+from utils.Logger import Logger
 
 class Client:
-    
     MESSAGE_SIZE = 1024
+    DEFAULT_HOST = "127.0.0.1"
+    CLOSE_SIGNAL = "cerrar"
     
-    def __init__(self, host, port, username):
-        self.host = host
+    def __init__(self, port, username, host = DEFAULT_HOST):
         self.port = port
         self.username = username
+        self.host = host
         self.client = None
         self.create()
-        logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(levelname)s - %(message)s')
         
     def create(self):
         try:
             self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.client.connect((self.host, self.port))
         except Exception as e:
-            logging.info(f"CLIENT {e}")
+            Logger.log(f"CLIENT {e}")
             
     def send(self, message: str):
         try:
@@ -35,7 +34,7 @@ class Client:
             binaryMessage = customMessage.encode("utf-8")[:1024]
             self.client.send(binaryMessage)
         except Exception as e:
-            logging.info(f"CLIENT SEND: {e}")
+            Logger.log(f"CLIENT SEND: {e}")
     
     def receive(self):
         try:
@@ -43,9 +42,6 @@ class Client:
             while True:
                 binaryMessage = self.client.recv(self.MESSAGE_SIZE)
                 message = binaryMessage.decode("utf-8")
-                logging.info(f"{message}")            
-                if message.lower() == "cerrar":
-                    break
-            self.client.close()
+                Logger.log(f"{message}")
         except Exception as e:
-            logging.info(f"CLIENT RECEIVE: {e}")
+            Logger.log(f"CLIENT RECEIVE: {e}")

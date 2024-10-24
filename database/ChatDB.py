@@ -5,19 +5,19 @@ Created on Sat Oct 19 00:08:09 2024
 
 @author: isildur1
 """
-
 import sqlite3
+import logging
 
 class ChatDB:
-    
+    DB_NAME = "realtime_chat.db"
     def __init__(self):
-        self.create()
-        # self.dropTables()
-        self.createTables()
+        self.connect()
+        logging.basicConfig(level=logging.DEBUG,
+                format='%(asctime)s - %(levelname)s - %(message)s')
     
-    def create(self):
+    def connect(self):
         try:
-            self.conn = sqlite3.connect('realtime_chat.db')
+            self.conn = sqlite3.connect(self.DB_NAME)
             self.cursor = self.conn.cursor()
         except Exception as e:
             print(f"DATABASE CREATE: {e}")
@@ -29,6 +29,8 @@ class ChatDB:
             self.conn.commit()
         except Exception as e:
             print(f"DATABASE DROP TABLES: {e}")
+        finally:
+            self.conn.close()
         
     def createTables(self):
         try:
@@ -53,6 +55,8 @@ class ChatDB:
             self.conn.commit()
         except Exception as e:
             print(f"DATABASE TABLES: {e}")
+        finally:
+            self.conn.close()
         
     def insertUser(self, username, password):
         try:
@@ -62,8 +66,12 @@ class ChatDB:
                 VALUES (?, ?)
                 ''', (username, password))
             self.conn.commit()
+        except sqlite3.IntegrityError:
+            raise Exception("Error: Usuario existente")
         except Exception as e:
             raise Exception(f"DATABASE INSERT USER: {e}")
+        finally:
+            self.conn.close()
             
     def insertMessage(self, username, message):
         try:
@@ -75,11 +83,8 @@ class ChatDB:
             self.conn.commit()
         except Exception as e:
             print(f"DATABASE INSERT MESSAGE: {e}")
-            
-    def getMessages(self):
-        self.cursor.execute('SELECT * FROM message')
-        messages = self.cursor.fetchall()
-        return messages
+        finally:
+            self.conn.close()
     
     def getUsers(self):
         self.cursor.execute('SELECT * FROM user')
@@ -92,8 +97,29 @@ class ChatDB:
                 '''
                 SELECT * FROM user
                 WHERE username = ? AND password = ?
-                ''', (username, password))
+                ''',
+                (username, password)
+            )
             userFound = self.cursor.fetchall()
             return userFound
         except Exception as e:
             print(f"DATABASE GET USER BY CREDENTIALS: {e}")
+            return None
+        finally:
+            self.conn.close()
+
+    def getMessages(self):
+        try:
+            self.cursor.execute('SELECT * FROM message')
+            messages = self.cursor.fetchall()
+            return messages[:10]
+        except Exception as e:
+            print(f"GET MESSAGES: {e}")
+            return []
+
+    def printMessageHistory(self):
+        messages = self.getMessages()
+        for message in messages:
+            customMessage = f"{message[1]} dijo: {message[2]}"
+            logging.info(customMessage)
+        self.conn.close()

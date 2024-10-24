@@ -22,8 +22,9 @@ class SocketServer:
             server = socket.socket(self.FAMILY, self.TYPE)
             server.bind((self.host, self.port))
             server.listen(self.backlog)
-            print("---------------------------------------")
-            print(f"LISTENING ON: {self.host}:{self.port}\n")
+            print("+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+")
+            print(f"LISTENING ON: {self.host}:{self.port}")
+            print("+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+")
             return server
         except Exception as e:
             print(f"SERVER: {e}")
