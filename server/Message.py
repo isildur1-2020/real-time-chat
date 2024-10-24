@@ -21,11 +21,16 @@ class Message(Observable):
         ChatDB().insertMessage(username, message)
         self.notifyObservers(current_address)
 
+    def printClientsConnected(self):
+        print(f"CONNECTED CLIENTS {len(self.clients.keys())}")
+
     def addObserver(self, client):
         self.clients[client.client_address] = client
+        self.printClientsConnected()
 
     def removeObserver(self, client):
         self.clients.pop(client.client_address)
+        self.printClientsConnected()
 
     def notifyObservers(self, current_address: tuple):
         for address, client in self.clients.items():

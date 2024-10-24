@@ -36,12 +36,16 @@ class Client:
         except Exception as e:
             Logger.log(f"CLIENT SEND: {e}")
     
-    def receive(self):
+    def receive(self, open_thread):
         try:
             if self.client == None: return
             while True:
                 binaryMessage = self.client.recv(self.MESSAGE_SIZE)
                 message = binaryMessage.decode("utf-8")
                 Logger.log(f"{message}")
+                if(message.lower() == self.CLOSE_SIGNAL):
+                    Logger.log("CLOSING CURRENT CLIENTE")
+                    self.client.close()
+                    open_thread[0] = False
         except Exception as e:
             Logger.log(f"CLIENT RECEIVE: {e}")

@@ -13,6 +13,7 @@ from client.Client import Client
 from database.ChatDB import ChatDB
 
 def main():
+    open_thread = [True]
     PORT = Args.getFirst()
     try:
         username = Login().handle()
@@ -21,11 +22,11 @@ def main():
         return
     client = Client(PORT, username)
     
-    recv_proc = Thread(target=client.receive)
+    recv_proc = Thread(target=client.receive, args=(open_thread,))
     recv_proc.start()
     
     firstTime = True
-    while True:
+    while open_thread[0]:
         if firstTime: ChatDB().printMessageHistory()
         message = input("Escribe algo: ")
         if message != "": client.send(message)

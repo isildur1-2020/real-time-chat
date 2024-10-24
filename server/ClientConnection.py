@@ -40,6 +40,10 @@ class ClientConnection:
                 binaryMessage = self.client_socket.recv(self.MESSAGE_SIZE)
                 username, message = self.decodeMessage(binaryMessage)
                 if self.username == '': self.setUsername(username)
+                if(message.lower() == self.CLOSE_SIGNAL):
+                    self.observeMessage.removeObserver(self)
+                    self.sendMessage(self.CLOSE_SIGNAL)
+                    break
                 self.observeMessage.setContent(self.client_address, username, message)
         except Exception as e:
             print(f"RECEIVE MESSAGE: {e}")
