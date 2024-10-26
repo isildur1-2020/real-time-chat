@@ -1,5 +1,6 @@
 from database.ChatDB import ChatDB
-
+from arduino.Arduino import Arduino
+from arduino.constants import numberMessage, LOGIN_SUCESS
 class Observable:
     def addObserver(observer):
         pass
@@ -22,7 +23,11 @@ class Message(Observable):
         self.notifyObservers(current_address)
 
     def printClientsConnected(self):
-        print(f"CONNECTED CLIENTS {len(self.clients.keys())}")
+        connectedClients = len(self.clients.keys())
+        print(f"CONNECTED CLIENTS {connectedClients}")
+        if(connectedClients % 2 == 0):
+            Arduino().send(LOGIN_SUCESS)
+        Arduino().send(numberMessage(connectedClients))
 
     def addObserver(self, client):
         self.clients[client.client_address] = client

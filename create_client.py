@@ -11,20 +11,22 @@ from threading import Thread
 from utils.Logger import Logger
 from client.Client import Client
 from database.ChatDB import ChatDB
+from arduino.Arduino import Arduino
+from arduino.constants import LOGIN_ERROR, LOGIN_SUCESS
 
 def main():
     open_thread = [True]
     PORT = Args.getFirst()
     try:
         username = Login().handle()
+        Arduino().send(LOGIN_SUCESS)
     except Exception as e:
         Logger.log(e)
+        Arduino().send(LOGIN_ERROR)
         return
     client = Client(PORT, username)
-    
     recv_proc = Thread(target=client.receive, args=(open_thread,))
     recv_proc.start()
-    
     firstTime = True
     while open_thread[0]:
         if firstTime: ChatDB().printMessageHistory()
